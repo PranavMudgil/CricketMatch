@@ -1,4 +1,4 @@
 # CricketMatch
 > *  Download repo
-* Extract files
-* Run CricketMatch.java
+> * Extract files
+> * Run CricketMatch.java
