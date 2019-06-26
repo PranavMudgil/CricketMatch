@@ -1,7 +1,7 @@
 
 public class Player {
 	
-	
+	// since we're generating random players no instance fields are required here.
 	public Player() {}
 	
 	

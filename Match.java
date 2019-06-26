@@ -43,23 +43,23 @@ public class Match {
 	public void firstInnings() {
 		
 		int i = 0;
-
+		// condition while all players are not out or over are finished
 		while (!allout && i < OVERS) {
 
 			int[] currentOver = over();
 
 			for (int j : currentOver) {
-
+				// if random generates 7 it means W(out)
 				if (j == 7) {
-
+					
 					System.out.print("W ");
 					firstToBat.out();
-
+					// check if team has no wickets left
 					if (firstToBat.getWickets() == 0) {
 						allout = true;
 						break;
 					}
-
+				// else add runs to team and continue bowling
 				} else {
 					System.out.print(j + " ");
 					firstToBat.addRuns(j);
@@ -67,12 +67,15 @@ public class Match {
 				}
 
 			}
+			// next over
 			i++;
 			System.out.println("");
 
 		}
 
 	}
+	
+	// the reason i choose two methods with same function to compare the runs from previous team in the second innings
 
 	public void secondInnings() {
 		allout = false;
@@ -113,7 +116,7 @@ public class Match {
 
 	}
 
-	// prints final results where both runs of teams are compared and winning team is printed
+	// prints final results where both runs of teams are compared(using Integer.compare(int ,int)) and winning team is printed
 	public void results() {
 		System.out.println("Team " + firstToBat.getName() + ":" + firstToBat.getTotalRuns() + "-"
 				+ (10 - firstToBat.getWickets()));

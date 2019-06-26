@@ -6,11 +6,14 @@ public class MatchController {
 
 	private Match match = Match.getMatchInstance();
 
+	// contructor
 	public MatchController(Team t1, Team t2) {
 		this.team1 = t1;
 		this.team2 = t2;
 	}
 
+	
+	// this method takes random two element array either 0-0, 0-1, 1-0, 1-1 for toss
 	public void toss() {
 
 		int[] res = new int[2];
@@ -42,6 +45,8 @@ public class MatchController {
 
 	}
 	
+
+	// calls method in Match.java class
 	public void startMatch() {
 		System.out.println("Match Started!");
 		
@@ -55,11 +60,13 @@ public class MatchController {
 		
 	}
 
+	
 	public void endMatch() {
 		System.out.println("Match ends!");
 	};
 
 
+	// called from main method
 	public void init() {
 		toss();
 
