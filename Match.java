@@ -3,7 +3,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Match {
 
-	public Match() {
+	private Match() {
 	}
 
 	private static Match match = new Match();
