@@ -6,6 +6,7 @@ public class Team {
 	private String name;
 	private int wickets = 10;
 	private int runs = 0;
+
 	
 	public void out() {
 		wickets--;

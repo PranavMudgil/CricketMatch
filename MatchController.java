@@ -45,10 +45,14 @@ public class MatchController {
 
 	}
 	
+	public void findScoreInOver(String inn1,String inn2) {
+		match.findScoreInInnings(inn1, inn2);
+	}
+	
 
 	// calls method in Match.java class
 	public void startMatch() {
-		System.out.println("Match Started!");
+		System.out.println("\nMatch Started!");
 		
 		match.firstInnings();
 		
