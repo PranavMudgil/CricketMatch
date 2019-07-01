@@ -1,10 +1,11 @@
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.swing.text.NumberFormatter;
 
 public class Match {
 
@@ -20,7 +21,7 @@ public class Match {
 	private String findScoreInFirstInnings = null;
 	private String findScoreInSecondInnings = null;
 
-	private static DecimalFormat formatter = new DecimalFormat("#.#");
+	private DecimalFormat runFormatter = new DecimalFormat("###");
 	// 10 overs match
 	private static int OVERS = 10;
 	private Team firstToBat;
@@ -28,9 +29,12 @@ public class Match {
 	private boolean allout = false;
 	private Player currentBatting1;
 	private Player currentBatting2;
+	private Player currentBowler;
 	private boolean targetReached = false;
-	private double totalOver = 0.0;
+	private float totalOver = 0.0f;
 	private boolean secondInnings = false;
+	private List<Player> firstToBatScoreBoard = new ArrayList<>();
+	private List<Player> secondToBatScoreBoard = new ArrayList<>();
 
 	int battingPos = 1;
 
@@ -92,34 +96,48 @@ public class Match {
 		System.out.println("---------------------------------------------------------------");
 		if (secondInnings == false) {
 			System.out.println("Batting:");
-			System.out.println(currentBatting1.getName() + "*	|	R:" + currentBatting1.getRuns() + "  B:"
-					+ currentBatting1.getBalls() + "  4's:" + currentBatting1.getFours() + " 6's:"
-					+ currentBatting1.getSixes() + " S.R:" + currentBatting1.getStrikeRate());
-			System.out.println(currentBatting2.getName() + "*		|	R:" + currentBatting2.getRuns() + "  B:"
-					+ currentBatting2.getBalls() + "  4's:" + currentBatting2.getFours() + " 6's:"
-					+ currentBatting2.getSixes() + " S.R:" + currentBatting2.getStrikeRate());
-			System.out.println("\nTotal:" + firstToBat.getTotalRuns() + "-" + (10 - secondToBat.getWickets()) + "("
-					+ formatter.format(totalOver) + ")\n");
+			for (Player p : firstToBatScoreBoard) {
+				if(p.getOut().equals("out")) {
+					System.out.println(p.getName() + "    Out by:" + p.getOutBy() + "    	 	R:"
+						+ runFormatter.format(p.getRuns()) + "  B:" + p.getBalls() + "  4's:" + p.getFours() + " 6's:"
+						+ p.getSixes() + " S.R:" + p.getStrikeRate());
+				}else{
+					System.out.println(p.getName() + "*  	  		   	 	R:"+ runFormatter.format(p.getRuns())
+					+ "  B:" + p.getBalls() + "  4's:" + p.getFours() + " 6's:"+ p.getSixes()
+					+ " S.R:" + p.getStrikeRate());
+				}
+				
+			}
+			
 		} else {
 			System.out.println("\nBatting");
-			System.out.println(currentBatting1.getName() + "*       R:" + currentBatting1.getRuns() + "  B:"
-					+ currentBatting1.getBalls() + "  4's:" + currentBatting1.getFours() + " 6's:"
-					+ currentBatting1.getSixes() + " S.R:" + currentBatting1.getStrikeRate());
-			System.out.println(currentBatting2.getName() + "*       R:" + currentBatting2.getRuns() + "  B:"
-					+ currentBatting2.getBalls() + "  4's:" + currentBatting2.getFours() + " 6's:"
-					+ currentBatting2.getSixes() + " S.R:" + currentBatting2.getStrikeRate());
-			System.out.println("Total:" + secondToBat.getTotalRuns() + "-" + (10 - secondToBat.getWickets()) + "("
-					+ formatter.format(totalOver) + ") overs " + "Target:" + firstToBat.getTotalRuns() + " runs");
+			for (Player p : secondToBatScoreBoard) {
+				if(p.getOut().equals("out")) {
+					System.out.println(p.getName() + " 		   Out by:" + p.getOutBy() + "    	 	R:"
+						+ runFormatter.format(p.getRuns()) + "  B:" + p.getBalls() + "  4's:" + p.getFours() + " 6's:"
+						+ p.getSixes() + " S.R:" + p.getStrikeRate());
+				}else {
+					System.out.println(p.getName() + "*  		    	 	R:"
+							+ runFormatter.format(p.getRuns()) + "  B:" + p.getBalls() + "  4's:" + p.getFours() + " 6's:"
+							+ p.getSixes() + " S.R:" + p.getStrikeRate());
+				}
+				
+			}
+			
 		}
 
 		System.out.println("---------------------------------------------------------------\n");
 	}
 
 	// first team to get random runs
-	public void firstInnings() {
+	public void firstInnings(Connection conn) {
+
 		// assigns first batting persons from the player list
 		currentBatting1 = firstToBat.getPlayer(battingPos - 1);
 		currentBatting2 = firstToBat.getPlayer(battingPos);
+
+		// this list adds the players who batted and got out
+		List<Player> bowlers = secondToBat.getBowlers();
 
 		System.out.println("\n" + currentBatting1.getName() + "* & " + currentBatting2.getName() + "* on the field!");
 		System.out.println(currentBatting1.getName() + " is gonna open first!\n");
@@ -128,30 +146,68 @@ public class Match {
 
 		// condition while all players are not out or over are finished
 		while (!allout && currentOver < OVERS) {
-			totalOver = currentOver + 0.0;
+			totalOver = currentOver + 0.0f;
+			// select random bowler from bowlers or allrounders
+			currentBowler = bowlers.get(ThreadLocalRandom.current().nextInt(0, bowlers.size()));
+			System.out.println(currentBowler.getName() + " on bowling\n");
+			// increment over in current bowler
+			currentBowler.addOver();
+
 			for (int j = 1; j < 7; j++) {
 
 				if (findScoreInFirstInnings != null) {
 					// if the total overs equals the provided score required over, it calls to
 					// getScore()
-					if (formatter.format(totalOver).equals(findScoreInFirstInnings))
+					if ((totalOver + "").equals(findScoreInFirstInnings))
 						this.getScore();
-					else if ((currentOver + ".0").equals(findScoreInFirstInnings))
+					else if ((totalOver + "").equals(findScoreInFirstInnings))
 						this.getScore();
 				}
 				// adds total over count after each run generated
 				int run = scoreGenerator();
-				totalOver += (double) (j / 10) + 0.1;
+				totalOver += 0.1;
+				totalOver = Player.round(totalOver, 1);
+
+				try {
+
+					PreparedStatement bowl;
+					if (run == 7) {
+						bowl = conn.prepareStatement(
+								"INSERT into `BallData`(batsman_name,bowler_name,run,team_name) VALUES('"
+										+ currentBatting1.getName() + "','" + currentBowler.getName() + "','W','"
+										+ firstToBat.getName() + "')");
+
+					} else {
+						bowl = conn.prepareStatement(
+								"INSERT into `BallData`(batsman_name,bowler_name,run,team_name) VALUES('"
+										+ currentBatting1.getName() + "','" + currentBowler.getName() + "','" + run
+										+ "','" + firstToBat.getName() + "')");
+					}
+
+					bowl.executeUpdate();
+				} catch (SQLException e) {
+					e.getCause();
+				}
 
 				// if random generates 7 it means W(out)
 				if (run == 7) {
+					// decrement wicket of team
 					firstToBat.out();
-					System.out.println("Over:" + formatter.format(totalOver) + " W Score:" + firstToBat.getTotalRuns()
-							+ "-" + (10 - firstToBat.getWickets()) + "\n");
-					System.out.println(currentBatting1.getName() + " Out after " + currentBatting1.getRuns()
-							+ " runs in (" + formatter.format(totalOver) + ") overs");
+					currentBatting1.setOut(true);
+					// increment wicket of bowler
+					currentBowler.wicket();
+					// add bowler to batsman outby
+					currentBatting1.outBy(currentBowler.getName());
+					firstToBatScoreBoard.add(currentBatting1);
+
+					System.out.println("Over:" + totalOver + " W Score:" + firstToBat.getTotalRuns() + "-"
+							+ (10 - firstToBat.getWickets()) + "\n");
+					System.out.println(currentBatting1.getName() + " Out by " + currentBowler.getName() + " after "
+							+ runFormatter.format(currentBatting1.getRuns()) + " runs in (" + totalOver + ") overs");
+
 					// increments the batting counter to get next player from player list
 					battingPos++;
+					currentBatting1 = null;
 					// check if team has no wickets left
 					if (firstToBat.getWickets() == 1) {
 						allout = true;
@@ -167,11 +223,15 @@ public class Match {
 						currentBatting1.addFour();
 					if (run == 6)
 						currentBatting1.addSix();
-					System.out.print("Over:" + formatter.format(totalOver) + " Run:" + run);
+					System.out.print("Over:" + totalOver + " Run:" + run);
+					// add runs to team
 					firstToBat.addRuns(run);
-
+					// add runs to batsman
 					currentBatting1.addRuns(run);
+					// add balls played
 					currentBatting1.addballs();
+					//add runs given to bowler
+					currentBowler.addRunsGiven(run);
 
 				}
 				// if run is odd switch batting postitions of players
@@ -194,17 +254,30 @@ public class Match {
 			System.out.println("\nOver: " + currentOver);
 
 		}
+		
+		if(allout){
+			firstToBatScoreBoard.add(currentBatting2);
+		}else {
+			firstToBatScoreBoard.add(currentBatting1);
+			firstToBatScoreBoard.add(currentBatting2);
+		}
+		
 		// if innings finishes before the required over to see score, it prints at the
 		// last of innings
 		if (findScoreInFirstInnings != null)
 			if (Float.parseFloat(findScoreInFirstInnings) > totalOver)
 				getScore();
+
+		if ((totalOver + "").equals((OVERS - 1) + ".6"))
+			totalOver = OVERS;
+
+		getScore();
 	}
 
 	// the reason i choose two methods with same function to compare the runs from
 	// previous team in the second innings
 
-	public void secondInnings() {
+	public void secondInnings(Connection conn) {
 
 		System.out.println("Second Innings: " + secondToBat.getName() + " needs " + (firstToBat.getTotalRuns() + 1)
 				+ " runs to win this match\n");
@@ -212,7 +285,9 @@ public class Match {
 		secondInnings = true;
 		battingPos = 1;
 		allout = false;
-		totalOver = 0;
+		totalOver = 0.0f;
+		currentBowler = null;
+		List<Player> bowlers = firstToBat.getBowlers();
 
 		currentBatting1 = secondToBat.getPlayer(battingPos - 1);
 		currentBatting2 = secondToBat.getPlayer(battingPos);
@@ -220,36 +295,78 @@ public class Match {
 		System.out.println("\n" + currentBatting1.getName() + "* & " + currentBatting2.getName() + "* on the field!");
 		System.out.println(currentBatting1.getName() + " is gonna open first!\n");
 
-		int currentOver = 0;
+		float currentOver = 0;
 
-		while (!allout && currentOver < OVERS) {
+		while (!allout && currentOver < OVERS && !targetReached) {
 
-			totalOver = currentOver;
-
+			totalOver = currentOver + 0.0f;
+			// select random bowler from bowlers or allrounders
+			currentBowler = bowlers.get(ThreadLocalRandom.current().nextInt(0, bowlers.size()));
+			System.out.println(currentBowler.getName() + " on bowling\n");
+			// increment over in current bowler
+			currentBowler.addOver();
+			
 			for (int j = 1; j < 7; j++) {
 
 				if (findScoreInSecondInnings != null) {
-					if (formatter.format(totalOver).equals(findScoreInSecondInnings))
+					if ((totalOver + "").equals(findScoreInSecondInnings))
+						this.getScore();
+					else if ((totalOver + "").equals(findScoreInSecondInnings))
 						this.getScore();
 				}
 
 				int run = scoreGenerator();
 
-				totalOver += (double) (j / 10) + 0.1;
+				currentBowler.addOver();
+				try {
+					if (conn != null) {
+						PreparedStatement bowl;
+						if (run == 7) {
+							bowl = conn.prepareStatement(
+									"INSERT into `BallData`(batsman_name,bowler_name,run,team_name) VALUES('"
+											+ currentBatting1.getName() + "','" + currentBowler.getName() + "','W','"
+											+ secondToBat.getName() + "')");
+
+						} else {
+							bowl = conn.prepareStatement(
+									"INSERT into `BallData`(batsman_name,bowler_name,run,team_name) VALUES('"
+											+ currentBatting1.getName() + "','" + currentBowler.getName() + "','" + run
+											+ "','" + secondToBat.getName() + "')");
+						}
+
+						bowl.executeUpdate();
+					}
+
+				} catch (SQLException e) {
+					e.getCause();
+				}
+
+				totalOver += 0.1;
+				totalOver = Player.round(totalOver, 1);
+
 				// if second team reaches the target the match finishes
 				if (firstToBat.getTotalRuns() < secondToBat.getTotalRuns()) {
+					
+					
 					targetReached = true;
 					break;
+
 				}
 
 				// if random generates 7 it means W(out)
 				if (run == 7) {
-
-					System.out.println("Over:" + formatter.format(totalOver) + " W\n");
-					System.out.println(currentBatting1.getName() + " Out after " + currentBatting1.getRuns()
-							+ " runs in (" + formatter.format(totalOver) + ") overs");
 					secondToBat.out();
+					currentBowler.wicket();
+					currentBatting1.setOut(true);
+					currentBatting1.outBy(currentBowler.getName());
+					secondToBatScoreBoard.add(currentBatting1);
+
+					System.out.println("Over:" + totalOver + " W\n");
+					System.out.println(currentBatting1.getName() + " Out by " + currentBowler.getName() + " after "
+							+ runFormatter.format(currentBatting1.getRuns()) + " runs in (" + totalOver + ") overs");
+
 					battingPos++;
+					currentBatting1 = null;
 					// check if team has no wickets left
 					if (secondToBat.getWickets() == 1) {
 						allout = true;
@@ -264,8 +381,9 @@ public class Match {
 						currentBatting1.addFour();
 					if (run == 6)
 						currentBatting1.addSix();
-					System.out.print("Over:" + formatter.format(totalOver) + " Run:" + run);
+					System.out.print("Over:" + totalOver + " Run:" + run);
 					secondToBat.addRuns(run);
+					currentBowler.addRunsGiven(run);
 
 					currentBatting1.addRuns(run);
 					currentBatting1.addballs();
@@ -282,8 +400,7 @@ public class Match {
 				}
 				System.out.println("");
 			}
-			if (targetReached)
-				break;
+			
 			// next over
 			currentOver++;
 			if (currentOver == OVERS || allout == true)
@@ -291,44 +408,62 @@ public class Match {
 
 			System.out.println("\nOver: " + currentOver);
 		}
+		
+		if(allout) {
+			secondToBatScoreBoard.add(currentBatting2);
+		}else {
+			secondToBatScoreBoard.add(currentBatting1);
+			secondToBatScoreBoard.add(currentBatting2);
+		}
 
 		if (findScoreInSecondInnings != null) {
 			if (totalOver < Float.parseFloat(findScoreInSecondInnings))
 				this.getScore();
 		}
+		
 
+		if ((totalOver + "").equals((OVERS - 1) + ".6"))
+			totalOver = OVERS;
+
+		getScore();
 	}
 
 	// prints final results where both runs of teams are compared(using
 	// Integer.compare(int ,int)) and winning team is printed
-	public void results() {
+	public CricketScoreResult results() {
 		System.out.println("\n_______________________________________________________________");
 		System.out.println("Results:");
 		System.out.println("\nTeam " + firstToBat.getName() + ":" + firstToBat.getTotalRuns() + "-"
-				+ (10 - firstToBat.getWickets()));
+				+ (11 - firstToBat.getWickets()));
 
 		System.out.println("Team " + secondToBat.getName() + ":" + secondToBat.getTotalRuns() + "-"
-				+ (10 - secondToBat.getWickets()));
+				+ (11 - secondToBat.getWickets()));
 
 		int res = Integer.compare(firstToBat.getTotalRuns(), secondToBat.getTotalRuns());
 
 		if (res > 0) {
 			System.out.println("***** " + firstToBat.getName() + " Wins the match by "
 					+ (firstToBat.getTotalRuns() - secondToBat.getTotalRuns()) + " runs " + " in "
-					+ (10 - firstToBat.getWickets()) + " wickets *****");
+					+ (11 - firstToBat.getWickets()) + " wickets *****");
 			System.out.println("_______________________________________________________________");
+
+			return new CricketScoreResult(firstToBat, secondToBat, firstToBatScoreBoard, secondToBatScoreBoard);
 
 		} else if (res < 0) {
 
 			System.out.println("***** " + secondToBat.getName() + " Wins the match by "
 					+ (secondToBat.getTotalRuns() - firstToBat.getTotalRuns()) + " runs " + " in "
-					+ (10 - secondToBat.getWickets()) + " wickets *****");
+					+ (11 - secondToBat.getWickets()) + " wickets *****");
 			System.out.println("_______________________________________________________________");
+			return new CricketScoreResult(secondToBat, firstToBat, secondToBatScoreBoard, firstToBatScoreBoard);
 
 		} else {
 			System.out.println("Its a tie, with both the teams making " + firstToBat.getTotalRuns() + " runs!");
 			System.out.println("_______________________________________________________________");
+			return new CricketScoreResult(firstToBat, secondToBat, firstToBatScoreBoard, secondToBatScoreBoard);
+
 		}
+
 	}
 
 	// un-used
