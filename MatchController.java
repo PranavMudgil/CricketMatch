@@ -59,12 +59,8 @@ public class MatchController {
 	public void startMatch() {
 
 		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sys", "root", "root");
+			conn = MySqlConnection.getConnection();
 		} catch (SQLException e) {
-			e.getMessage();
-		} catch (ClassNotFoundException e) {
-			System.out.println("driver class not found ");
 			e.getMessage();
 		}
 		System.out.println("\nMatch Started!");

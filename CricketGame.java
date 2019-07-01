@@ -126,8 +126,7 @@ public class CricketGame {
 
 		try {
 
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/sys", "root", "root");
+			conn = MySqlConnection.getConnection();
 			
 			
 			PreparedStatement insertTeam1 = conn
@@ -195,12 +194,12 @@ public class CricketGame {
 					listmen.add(conn.prepareStatement(insertPlayer + null + ",'" + p.getName() + "'," + p.getRuns() + ","
 							+ p.getBalls() + ",'" + p.getType() + "'," + p.getStrikeRate() + "," + p.getFours() + ","
 							+ p.getSixes() + "," + p.getWickets() + "," + p.getOversTaken() + "," + p.getRunsGiven() + ","
-							+ p.getEconomyRate() + "," + map.get(lose.getName()) + ",'" + p.getOutBy() + "','" + p.getOut() + "',"+match_id+")"));
+							+ p.getEconomyRate() + "," + map.get(win.getName()) + ",'" + p.getOutBy() + "','" + p.getOut() + "',"+match_id+")"));
 				}else {
-					listmen.add(conn.prepareStatement(insertPlayer + null + ",'" + p.getName() + "'," + p.getRuns() + ","
+					listmen.add(conn.prepareStatement(insertPlayer + null + ",'" + p.getName() + "*'," + p.getRuns() + ","
 							+ p.getBalls() + ",'" + p.getType() + "'," + p.getStrikeRate() + "," + p.getFours() + ","
 							+ p.getSixes() + "," + p.getWickets() + "," + p.getOversTaken() + "," + p.getRunsGiven() + ","
-							+ p.getEconomyRate() + "," + map.get(lose.getName()) + ",'','" + p.getOut() + "',"+match_id+")"));
+							+ p.getEconomyRate() + "," + map.get(win.getName()) + ",'','" + p.getOut() + "',"+match_id+")"));
 				}
 			}
 			for (Player p : losingTeam) {
@@ -210,7 +209,7 @@ public class CricketGame {
 							+ p.getSixes() + "," + p.getWickets() + "," + p.getOversTaken() + "," + p.getRunsGiven() + ","
 							+ p.getEconomyRate() + "," + map.get(lose.getName()) + ",'" + p.getOutBy() + "','" + p.getOut() + "',"+match_id+")"));
 				}else {
-					listmen.add(conn.prepareStatement(insertPlayer + null + ",'" + p.getName() + "'," + p.getRuns() + ","
+					listmen.add(conn.prepareStatement(insertPlayer + null + ",'" + p.getName() + "*'," + p.getRuns() + ","
 							+ p.getBalls() + ",'" + p.getType() + "'," + p.getStrikeRate() + "," + p.getFours() + ","
 							+ p.getSixes() + "," + p.getWickets() + "," + p.getOversTaken() + "," + p.getRunsGiven() + ","
 							+ p.getEconomyRate() + "," + map.get(lose.getName()) + ",'','" + p.getOut() + "',"+match_id+")"));
@@ -223,13 +222,9 @@ public class CricketGame {
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Connection failed!");
 			System.out.println(e.getMessage());
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.getMessage();
-
 		} finally {
 			try {
 				if (conn != null)
