@@ -18,7 +18,7 @@
  
  * PlayerDetails - Stores details of every player batsman or bowler with runs, strike rate, economy rate, overs_taken, runs_given..etc
  
- <img width="1201" alt="Screenshot 2019-07-01 at 1 53 36 PM" src="https://user-images.githubusercontent.com/24803889/60423193-43592600-9c0b-11e9-91ae-06accda81e81.png">
+ <img width="1200" alt="Screenshot 2019-07-01 at 2 31 15 PM" src="https://user-images.githubusercontent.com/24803889/60423949-e6f70600-9c0c-11e9-9ba5-73dcb3417f7e.png">
 
  
  * BallData - stores details of every ball that is being played, with batsman name, bowler name and runs made or wicket taken
