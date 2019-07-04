@@ -7,6 +7,7 @@ public class Team {
 	private String name;
 	private int wickets = 11;
 	private int runs = 0;
+	private float overs;
 
 	public void out() {
 		wickets--;
@@ -34,7 +35,12 @@ public class Team {
 		return bowlers;
 	}
 	
-	
+	public float getOver() {
+		return this.overs;
+	}
+	public void setOvers(float over) {
+		this.overs = over;
+	}
 
 	public void addPlayers(List<Player> team) {
 		Players = new ArrayList<>(team);

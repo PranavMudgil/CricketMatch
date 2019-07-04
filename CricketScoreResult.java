@@ -17,7 +17,7 @@ public class CricketScoreResult {
 	
 	public Team getWinner() {return winner;}
 	public Team getLoser() {return losing;}
-	
+
 	public List<Player> getWinningBoard(){return winnerScoreBoard;}
 	public List<Player> getLosingScoreBoard(){return loserScoreBoard;}
 }

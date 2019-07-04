@@ -1,6 +1,3 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class MatchController {
 
@@ -10,8 +7,8 @@ public class MatchController {
 	private CricketScoreResult result;
 
 	private Match match = Match.getMatchInstance();
+	
 
-	private Connection conn = null;
 
 	// contructor
 	public MatchController(Team t1, Team t2) {
@@ -20,7 +17,7 @@ public class MatchController {
 	}
 
 	// this method takes random two element array either 0-0, 0-1, 1-0, 1-1 for toss
-	public void toss() {
+	public void doToss() {
 
 		int[] res = new int[2];
 		res = Match.tossAndopt();
@@ -51,37 +48,24 @@ public class MatchController {
 
 	}
 
-	public void findScoreInOver(String inn1, String inn2) {
-		match.findScoreInInnings(inn1, inn2);
-	}
-
+	
 	// calls method in Match.java class
 	public void startMatch() {
 
-		try {
-			conn = MySqlConnection.getConnection();
-		} catch (SQLException e) {
-			e.getMessage();
-		}
+
 		System.out.println("\nMatch Started!");
 
-		match.firstInnings(conn);
+		match.firstInnings();
 
 		System.out.println("");
 
-		match.secondInnings(conn);
+		Utility.timeout(2000);
 
-		if (conn != null) {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				
-				e.getCause();
-			}
-		}
+		match.secondInnings();
+		
+
+
 	}
-
-	
 
 	public void endMatch() {
 
@@ -91,8 +75,11 @@ public class MatchController {
 	};
 
 	// called from main method
-	public void init() {
-		toss();
+	public void initMatch(int id) {
+		
+		match.setMatchId(id);
+
+		doToss();
 
 		startMatch();
 
