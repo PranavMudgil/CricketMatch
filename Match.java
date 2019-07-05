@@ -151,7 +151,7 @@ public class Match {
 				totalOver += 0.1;
 				totalOver = Utility.round(totalOver, 1);
 
-				Utility.timeout(1000);
+				Utility.timeout(100);
 
 				// if random generates 7 it means W(out)
 				if (run == 7) {
@@ -292,7 +292,7 @@ public class Match {
 
 				}
 
-				Utility.timeout(1000);
+				Utility.timeout(100);
 
 				// if random generates 7 it means W(out)
 				if (run == 7) {

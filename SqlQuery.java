@@ -70,12 +70,12 @@ public class SqlQuery {
 
 	}
 
-	public static void InsertMatchResult(Team win, Team lose, Map<String, Integer> map) {
+	public static void InsertMatchResult(Team win, Team lose, Map<String, Integer> map, int id) {
 		final String insertResultQuery = "UPDATE `CricketMatch` SET team1_id =" + map.get(win.getName())
-				+ ", team1_name ='" + win.getName() + "',team2_id =" + map.get(lose.getName()) + " ,team2_name = "
-				+ lose.getName() + ",team1_score= " + win.getTotalRuns() + ",team2_score = " + lose.getTotalRuns()
-				+ ",winner = " + win.getName() + ",winsby = " + (win.getTotalRuns() - lose.getTotalRuns())
-				+ ",team1_wickets = " + (11 - win.getWickets()) + ",team2_wickets = " + (11 - lose.getWickets());
+				+ ",`team1_name` ='" + win.getName() + "',`team2_id` =" + map.get(lose.getName()) + ",`team2_name` = '"
+				+ lose.getName() + "',team1_score= " + win.getTotalRuns() + ",team2_score = " + lose.getTotalRuns()
+				+ ",winner = '" + win.getName() + "',winsby = " + (win.getTotalRuns() - lose.getTotalRuns())
+				+ ",team1_wickets = " + (11 - win.getWickets()) + ",team2_wickets = " + (11 - lose.getWickets())+" WHERE match_id ="+id+"";
 
 		Connection conn = MyConnection.getConnection();
 		try {
@@ -217,9 +217,9 @@ public class SqlQuery {
 	}
 
 	public static void InsertBreakQuery(Team team, float over, int id) {
-		final String query = "INSERT into `ball_data`(match_status,team_name,ball_data.total_over,team_score,first_innings,wickets_given,prev_overs,target,first_innings_by,match_id)VALUES('Break','"
+		final String query = "INSERT into `ball_data`(match_status,team_name,ball_data.total_over,team_score,first_innings,wickets_given,prev_overs,wickets_prev,target,first_innings_by,match_id)VALUES('Break','"
 				+ team.getName() + "'," + over + "," + +team.getTotalRuns() + ",1," + (11 - team.getWickets()) + ","
-				+ over + "," + +team.getTotalRuns() + ",'" + team.getName() + "'," + id + ")";
+				+ over +","+(11-team.getWickets())+ "," + +team.getTotalRuns() + ",'" + team.getName() + "'," + id + ")";
 
 		Connection conn = MyConnection.getConnection();
 
@@ -236,9 +236,9 @@ public class SqlQuery {
 	}
 
 	public static void finalBallResultQuery(Team first, Team second, String winner, float over, int id) {
-		final String query = "INSERT into `ball_data`(match_status,team_name,ball_data.total_over,team_score,wickets_given,wickets_prev,target,winner,first_innings_by,second_innings_by,match_id)"
+		final String query = "INSERT into `ball_data`(match_status,team_name,ball_data.total_over,team_score,wickets_given,wickets_prev,prev_overs,target,winner,first_innings_by,second_innings_by,match_id)"
 				+ "VALUES('Finished','" + second.getName() + "'," + over + "," + second.getTotalRuns() + ","
-				+ (11 - second.getWickets()) + "," + +(11 - first.getWickets()) + "," + first.getTotalRuns() + ",'"
+				+ (11 - second.getWickets()) + "," + +(11 - first.getWickets()) + ","+first.getOver()+"," + first.getTotalRuns() + ",'"
 				+ winner + "','" + first.getName() + "','" + second.getName() + "'," + id + ")";
 
 		Connection conn = MyConnection.getConnection();
