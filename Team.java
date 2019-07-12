@@ -1,6 +1,7 @@
+
+
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class Team {
 	private List<Player> Players;
@@ -8,6 +9,20 @@ public class Team {
 	private int wickets = 11;
 	private int runs = 0;
 	private float overs;
+	private int seriesScore = 0;
+
+	private ScoreCard scoreCard;
+
+	public void reset() {
+		for (Player p : Players) {
+			p.reset();
+		}
+		scoreCard = null;
+		wickets = 11;
+		runs = 0;
+		overs = 0.0f;
+
+	}
 
 	public void out() {
 		wickets--;
@@ -23,8 +38,7 @@ public class Team {
 
 	public List<Player> getBowlers() {
 		List<Player> bowlers = new ArrayList<>();
-
-		for (int i = Players.size()-1; i >= 0; i--) {
+		for (int i = Players.size() - 1; i >= 0; i--) {
 			Player p = Players.get(i);
 			if (p.getType() == Player.Type.BOWLER || p.getType() == Player.Type.ALLROUNDER) {
 				bowlers.add(p);
@@ -34,10 +48,19 @@ public class Team {
 
 		return bowlers;
 	}
-	
+
+	public void addSeriesScore() {
+		seriesScore++;
+	}
+
+	public int getSeriesScore() {
+		return seriesScore;
+	}
+
 	public float getOver() {
 		return this.overs;
 	}
+
 	public void setOvers(float over) {
 		this.overs = over;
 	}
@@ -62,5 +85,12 @@ public class Team {
 	public Player getPlayer(int n) {
 		return Players.get(n);
 	}
+	
+	public ScoreCard getScoreCard(){
+		return scoreCard;
+	}
 
+	public void setScoreCard(List<Player> player_scores) {
+		scoreCard = new ScoreCard(player_scores);
+	}
 }

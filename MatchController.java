@@ -1,96 +1,137 @@
 
+import java.util.Map;
+
 public class MatchController {
 
-	private Team team1;
-	private Team team2;
+	private Team team1, team2;
 
-	private CricketScoreResult result;
+	private Match match;
 
-	private Match match = Match.getMatchInstance();
-	
+	private int matchId;
 
+	private CricketResult result;
 
-	// contructor
-	public MatchController(Team t1, Team t2) {
-		this.team1 = t1;
-		this.team2 = t2;
+	private Map<String, Integer> idMap;
+
+	private int seriesId;
+
+	// called from main method
+	public void initMatch(MatchType type, int matches) {
+
+		generateTeams();
+
+		while (matches >= 1) {
+
+			generateMatch(type.getValue());
+
+			doToss();
+
+			startMatch();
+
+			endMatch();
+
+			uploadMatchResult();
+
+			reset();
+
+			matches--;
+		}
+		MyConnection.closeConnection();
+	}
+
+	private void generateTeams() {
+
+		team1 = new Team("India", DBHelper.getPlayers("India"));
+		team2 = new Team("Pakistan", DBHelper.getPlayers("Pakistan"));
+
+		DBHelper.InsertTeam(team1, team2);
+
+		idMap = DBHelper.FetchTeamId(team1.getName(), team2.getName());
+
+		if (idMap.isEmpty()) {
+			System.exit(1);
+		}
+
+		DBHelper.insertSeries(team1.getName(), team2.getName());
+
+		seriesId = DBHelper.getSeriesId();
+	}
+
+	private void generateMatch(int overs) {
+
+		DBHelper.InsertMatch(idMap.get(team1.getName()), idMap.get(team2.getName()), team1, team2, seriesId);
+
+		matchId = DBHelper.GetMatchId();
+		match = new Match(matchId, overs);
 	}
 
 	// this method takes random two element array either 0-0, 0-1, 1-0, 1-1 for toss
 	public void doToss() {
 
-		int[] res = new int[2];
-		res = Match.tossAndopt();
+		int[] res = MatchUtils.tossAndOpt();
 
 		switch (res[0]) {
 		case 0:
 			if (res[1] == 0) {
-				System.out.println(team1.getName() + " Won the toss and opts to Bat first!");
+				printUtils.printTeamWinningToss(team1.getName(), "Bat");
 				match.battingOrder(team1, team2);
 			} else {
-				System.out.println(team1.getName() + " Won the toss and opts to Ball first!");
+				printUtils.printTeamWinningToss(team1.getName(), "Bowl");
 				match.battingOrder(team2, team1);
 			}
-
 			break;
 		case 1:
 			if (res[1] == 0) {
-				System.out.println(team2.getName() + " Won the toss and opts to Bat first!");
+				printUtils.printTeamWinningToss(team2.getName(), "Bat");
 				match.battingOrder(team2, team1);
-			}
-
-			else {
-				System.out.println(team2.getName() + " Won the toss and opts to Ball first!");
+			} else {
+				printUtils.printTeamWinningToss(team2.getName(), "Bowl");
 				match.battingOrder(team1, team2);
 			}
-
 		}
-
 	}
 
-	
 	// calls method in Match.java class
 	public void startMatch() {
 
+		match.startFirstInnings();
 
-		System.out.println("\nMatch Started!");
+		MatchUtils.timeout(500);
 
-		match.firstInnings();
-
-		System.out.println("");
-
-		Utility.timeout(2000);
-
-		match.secondInnings();
-		
-
+		match.startSecondInnings();
 
 	}
 
+	// gets result from match.class
 	public void endMatch() {
-
-		System.out.println("Match ends!");
 
 		result = match.results();
 	};
 
-	// called from main method
-	public void initMatch(int id) {
-		
-		match.setMatchId(id);
+	// performs all db operation on result
+	private void uploadMatchResult() {
 
-		doToss();
+		Team winnerTeam = result.getWinner();
+		Team loserTeam = result.getLoser();
 
-		startMatch();
+		if (winnerTeam.getTotalRuns() == loserTeam.getTotalRuns()) {
 
-		endMatch();
+			DBHelper.InsertMatchTiedResult(winnerTeam, loserTeam, idMap, matchId);
 
+		} else {
+			DBHelper.InsertMatchResult(winnerTeam, loserTeam, idMap, matchId);
+			winnerTeam.addSeriesScore();
+		}
+
+		DBHelper.InsertPlayer(winnerTeam, loserTeam, idMap);
+
+		DBHelper.updateSeries(team1, team2, seriesId);
+
+		printUtils.printSeriesWinner(team1, team2);
 	}
 
-	public CricketScoreResult getResults() {
-		if (result != null)
-			return result;
-		return null;
+	public void reset() {
+		team1.reset();
+		team2.reset();
 	}
-
 }

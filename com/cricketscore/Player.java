@@ -1,6 +1,6 @@
 
 public class Player {
-	private int id;
+
 	private String name;
 	private int age;
 	private int sixes = 0;
@@ -19,37 +19,6 @@ public class Player {
 	public static enum Type {
 		BOWLER, BATSMAN, WICKETKEEPER, ALLROUNDER
 	}
-	
-	public void reset() {
-		sixes = 0;
-		fours = 0;
-		balls = 0;
-		strikeRate = 0.00f;
-		runs = 0f;
-		wickets = 0;
-		runs_given = 0f;
-		outby = null;
-		economyRate = 0.00f;
-		out = "not-out";
-	}
-	public Player(int id,String name,int age,String type) {
-		this.id = id;
-		this.name = name;
-		this.age = age;
-		switch(type) {
-		case "BOWLER": this.type = Player.Type.BOWLER;
-				break;
-		case "BATSMAN": this.type = Player.Type.BATSMAN;
-			break;
-		case "ALLROUNDER": this.type = Player.Type.ALLROUNDER;
-			break;
-		case "WICKETKEEPER": this.type = Player.Type.WICKETKEEPER;	
-		
-		}
-	}
-	
-	public int getId() {return id;}
-	
 
 	public Player(String name, int age, Type type) {
 		this.name = name;
@@ -76,7 +45,7 @@ public class Player {
 	public float getEconomyRate() {
 		if (overs_taken == 0)
 			return 0.00f;
-		economyRate = MatchUtils.round(runs_given / overs_taken, 2);
+		economyRate = Utility.round(runs_given / overs_taken, 2);
 		return economyRate;
 	}
 
@@ -110,7 +79,7 @@ public class Player {
 		if (runs == 0.0)
 			return 0.0f;
 
-		strikeRate = MatchUtils.round(((runs / balls) * 100), 2);
+		strikeRate = Utility.round(((runs / balls) * 100), 2);
 
 		return strikeRate;
 	}
@@ -163,5 +132,4 @@ public class Player {
 			out = "not-out";
 	}
 
-	
 }
