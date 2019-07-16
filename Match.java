@@ -5,11 +5,6 @@ import java.util.List;
 
 public class Match {
 
-	public Match(int id, int overs) {
-		OVERS = overs;
-		matchId = id;
-	}
-	
 	private final int OVERS;
 
 	private Team firstToBat;
@@ -30,6 +25,11 @@ public class Match {
 	private int battingPos = 1;
 
 	List<Player> scoreboard = new ArrayList<>();
+	
+	public Match(int id, int overs) {
+		OVERS = overs;
+		matchId = id;
+	}
 
 	// called by controller to set the batting team 0 means team1 ,1 means team2
 	public void battingOrder(Team t1, Team t2) {
@@ -88,60 +88,46 @@ public class Match {
 						allout = true;
 						break;
 					}
-
 					// gets new player from the list
 					currentBatting1 = firstToBat.getPlayer(battingPos);
 					System.out.println(currentBatting1.getName() + " on batting");
-
 					// else add runs to team and continue bowling
 				} else {
-
 					runTaken(firstToBat, currentBatting1, currentBowler, run);
-
 					DBHelper.InsertBallDataFirstInnings(firstToBat, currentBatting1, currentBowler.getName(), totalOver,
 							run + "", matchId);
-
 				}
-
 				if (run % 2 == 1 && run != 7) {
 					switchBattingStrike(run);
 				}
 			}
-
 			// next over
 			currentOver++;
 			if (currentOver == OVERS || allout == true)
 				break;
 
 			System.out.println("\nOver: " + currentOver);
-
 		}
-
 		if (allout) {
 			scoreboard.add(currentBatting2);
 		} else {
 			scoreboard.add(currentBatting1);
 			scoreboard.add(currentBatting2);
 		}
-
 		DBHelper.InsertBreakQuery(firstToBat, totalOver, matchId);
-
 		firstToBat.setOvers(totalOver);
-
 		firstToBat.setScoreCard(scoreboard);
-		
-		scoreboard.clear();
-
 		getScore();
+		scoreboard.clear();
 	}
 
 	public void startSecondInnings() {
 
 		printUtils.printTarget(secondToBat, firstToBat);
-		
+
 		// resetting values for second innings
 		resetValuesForSecondInnings();
-		
+
 		float currentOver = 0;
 
 		List<Player> bowlers = firstToBat.getBowlers();
@@ -172,27 +158,20 @@ public class Match {
 
 				// if second team reaches the target the match finishes
 				if (firstToBat.getTotalRuns() < secondToBat.getTotalRuns()) {
-
 					targetReached = true;
 					break;
-
 				}
-
 				MatchUtils.timeout(100);
 
 				// if random generates 7 it means W(out)
 				if (run == 7) {
 
 					wicketTaken(secondToBat, currentBatting1, currentBowler, scoreboard);
-
 					DBHelper.InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
 							currentBowler.getName(), totalOver, "W", matchId);
-
 					printUtils.printWicketTaken(currentBatting1, currentBowler.getName(), secondToBat, totalOver);
-
 					battingPos++;
 					currentBatting1 = null;
-
 					// check if team has no wickets left
 					if (secondToBat.getWickets() == 1) {
 						allout = true;
@@ -204,22 +183,18 @@ public class Match {
 				} else {
 
 					runTaken(secondToBat, currentBatting1, currentBowler, run);
-
 					DBHelper.InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
 							currentBowler.getName(), totalOver, run + "", matchId);
-
 				}
 				if (run % 2 == 1 && run != 7) {
 					switchBattingStrike(run);
 				}
-
 			}
 
 			// next over
 			currentOver++;
 			if (currentOver == OVERS || allout == true)
 				break;
-
 			System.out.println("\nOver: " + currentOver);
 		}
 		if (allout) {
@@ -229,8 +204,8 @@ public class Match {
 			scoreboard.add(currentBatting2);
 		}
 		secondToBat.setScoreCard(scoreboard);
-		scoreboard = null;
 		getScore();
+		scoreboard = null;
 	}
 
 	// returns final results where both runs of teams are compared
@@ -239,9 +214,7 @@ public class Match {
 		int res = Integer.compare(firstToBat.getTotalRuns(), secondToBat.getTotalRuns());
 
 		if (res > 0) {
-
 			printUtils.printResultHeader(firstToBat, secondToBat);
-
 			printUtils.printMatchWinner(firstToBat, secondToBat);
 
 			DBHelper.finalBallResultQuery(firstToBat, secondToBat, firstToBat.getName(), totalOver, matchId);
@@ -250,7 +223,6 @@ public class Match {
 
 		} else if (res < 0) {
 			printUtils.printResultHeader(firstToBat, secondToBat);
-
 			printUtils.printMatchWinner(secondToBat, firstToBat);
 
 			DBHelper.finalBallResultQuery(firstToBat, secondToBat, secondToBat.getName(), totalOver, matchId);
@@ -259,7 +231,6 @@ public class Match {
 
 		} else {
 			printUtils.printResultHeader(firstToBat, secondToBat);
-			
 			System.out.println("Its a tie, with both the teams making " + firstToBat.getTotalRuns() + " runs!");
 
 			DBHelper.finalBallResultQuery(firstToBat, secondToBat, "Tied", totalOver, matchId);

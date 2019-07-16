@@ -2,6 +2,8 @@
 import java.util.Map;
 
 public class MatchController {
+	
+	private static MatchController controller = new MatchController();
 
 	private Team team1, team2;
 
@@ -14,6 +16,12 @@ public class MatchController {
 	private Map<String, Integer> idMap;
 
 	private int seriesId;
+	
+	private MatchController() {}
+	
+	public static MatchController getInstance() {
+		return controller;
+	}
 
 	// called from main method
 	public void initMatch(MatchType type, int matches) {
@@ -47,10 +55,6 @@ public class MatchController {
 		DBHelper.InsertTeam(team1, team2);
 
 		idMap = DBHelper.FetchTeamId(team1.getName(), team2.getName());
-
-		if (idMap.isEmpty()) {
-			System.exit(1);
-		}
 
 		DBHelper.insertSeries(team1.getName(), team2.getName());
 
