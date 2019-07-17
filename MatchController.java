@@ -49,23 +49,23 @@ public class MatchController {
 
 	private void generateTeams() {
 
-		team1 = new Team("India", DBHelper.getPlayers("India"));
-		team2 = new Team("Pakistan", DBHelper.getPlayers("Pakistan"));
+		team1 = new Team("India", DBHelper.getInstance().getPlayers("India"));
+		team2 = new Team("Pakistan", DBHelper.getInstance().getPlayers("Pakistan"));
 
-		DBHelper.InsertTeam(team1, team2);
+		DBHelper.getInstance().InsertTeam(team1, team2);
 
-		idMap = DBHelper.FetchTeamId(team1.getName(), team2.getName());
+		idMap = DBHelper.getInstance().FetchTeamId(team1.getName(), team2.getName());
 
-		DBHelper.insertSeries(team1.getName(), team2.getName());
+		DBHelper.getInstance().insertSeries(team1.getName(), team2.getName());
 
-		seriesId = DBHelper.getSeriesId();
+		seriesId = DBHelper.getInstance().getSeriesId();
 	}
 
 	private void generateMatch(int overs) {
 
-		DBHelper.InsertMatch(idMap.get(team1.getName()), idMap.get(team2.getName()), team1, team2, seriesId);
+		DBHelper.getInstance().InsertMatch(idMap.get(team1.getName()), idMap.get(team2.getName()), team1, team2, seriesId);
 
-		matchId = DBHelper.GetMatchId();
+		matchId = DBHelper.getInstance().GetMatchId();
 		match = new Match(matchId, overs);
 	}
 
@@ -120,16 +120,16 @@ public class MatchController {
 
 		if (winnerTeam.getTotalRuns() == loserTeam.getTotalRuns()) {
 
-			DBHelper.InsertMatchTiedResult(winnerTeam, loserTeam, idMap, matchId);
+			DBHelper.getInstance().InsertMatchTiedResult(winnerTeam, loserTeam, idMap, matchId);
 
 		} else {
-			DBHelper.InsertMatchResult(winnerTeam, loserTeam, idMap, matchId);
+			DBHelper.getInstance().InsertMatchResult(winnerTeam, loserTeam, idMap, matchId);
 			winnerTeam.addSeriesScore();
 		}
 
-		DBHelper.InsertPlayer(winnerTeam, loserTeam, idMap);
+		DBHelper.getInstance().InsertPlayer(winnerTeam, loserTeam, idMap);
 
-		DBHelper.updateSeries(team1, team2, seriesId);
+		DBHelper.getInstance().updateSeries(team1, team2, seriesId);
 
 		printUtils.printSeriesWinner(team1, team2);
 	}
