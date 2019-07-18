@@ -1,7 +1,7 @@
 import java.util.List;
 import java.util.Map;
 
-public interface DBUtils {
+public interface CricketUtils {
 
 	public void InsertTeamName(Team t);
 	public void InsertTeam(Team t1,Team t2);

@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DBHelper implements DBUtils{
+public class CricketUtilsImpl implements CricketUtils{
 	
-	private static DBHelper helper = new DBHelper();
+	private static CricketUtilsImpl helper = new CricketUtilsImpl();
 	
-	public static DBHelper getInstance() {
+	public static CricketUtilsImpl getInstance() {
 		return helper;
 	}
 	
@@ -307,5 +307,5 @@ public class DBHelper implements DBUtils{
 	}
 
 	
-	private DBHelper() {}
+	private CricketUtilsImpl() {}
 }

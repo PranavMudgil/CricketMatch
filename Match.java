@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Match {
 
-	private final int OVERS;
+	private final int overs;
 
 	private Team firstToBat;
 	private Team secondToBat;
@@ -25,9 +25,9 @@ public class Match {
 	private int battingPos = 1;
 
 	List<Player> scoreboard = new ArrayList<>();
-	
-	public Match(int id, int overs) {
-		OVERS = overs;
+
+	public Match(int id, Match.MatchType type) {
+		this.overs = type.getValue();
 		matchId = id;
 	}
 
@@ -50,7 +50,7 @@ public class Match {
 
 		int currentOver = 0;
 
-		while (!allout && currentOver < OVERS) {
+		while (!allout && currentOver < overs) {
 
 			totalOver = currentOver + 0.0f;
 
@@ -74,8 +74,8 @@ public class Match {
 
 					wicketTaken(firstToBat, currentBatting1, currentBowler, scoreboard);
 
-					DBHelper.getInstance().InsertBallDataFirstInnings(firstToBat, currentBatting1, currentBowler.getName(), totalOver,
-							"W", matchId);
+					CricketUtilsImpl.getInstance().InsertBallDataFirstInnings(firstToBat, currentBatting1,
+							currentBowler.getName(), totalOver, "W", matchId);
 
 					printUtils.printWicketTaken(currentBatting1, currentBowler.getName(), firstToBat, totalOver);
 
@@ -94,8 +94,8 @@ public class Match {
 					// else add runs to team and continue bowling
 				} else {
 					runTaken(firstToBat, currentBatting1, currentBowler, run);
-					DBHelper.getInstance().InsertBallDataFirstInnings(firstToBat, currentBatting1, currentBowler.getName(), totalOver,
-							run + "", matchId);
+					CricketUtilsImpl.getInstance().InsertBallDataFirstInnings(firstToBat, currentBatting1,
+							currentBowler.getName(), totalOver, run + "", matchId);
 				}
 				if (run % 2 == 1 && run != 7) {
 					switchBattingStrike(run);
@@ -103,7 +103,7 @@ public class Match {
 			}
 			// next over
 			currentOver++;
-			if (currentOver == OVERS || allout == true)
+			if (currentOver == overs || allout == true)
 				break;
 
 			System.out.println("\nOver: " + currentOver);
@@ -114,10 +114,10 @@ public class Match {
 			scoreboard.add(currentBatting1);
 			scoreboard.add(currentBatting2);
 		}
-		DBHelper.getInstance().InsertBreakQuery(firstToBat, totalOver, matchId);
+		CricketUtilsImpl.getInstance().InsertBreakQuery(firstToBat, totalOver, matchId);
 		firstToBat.setOvers(totalOver);
 		firstToBat.setScoreCard(scoreboard);
-		getScore();
+		printScoreBoard();
 		scoreboard.clear();
 	}
 
@@ -137,7 +137,7 @@ public class Match {
 
 		printUtils.printOpeningPlayers(currentBatting1.getName(), currentBatting2.getName());
 
-		while (!allout && currentOver < OVERS && !targetReached) {
+		while (!allout && currentOver < overs && !targetReached) {
 
 			totalOver = currentOver + 0.0f;
 
@@ -167,7 +167,7 @@ public class Match {
 				if (run == 7) {
 
 					wicketTaken(secondToBat, currentBatting1, currentBowler, scoreboard);
-					DBHelper.getInstance().InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
+					CricketUtilsImpl.getInstance().InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
 							currentBowler.getName(), totalOver, "W", matchId);
 					printUtils.printWicketTaken(currentBatting1, currentBowler.getName(), secondToBat, totalOver);
 					battingPos++;
@@ -183,7 +183,7 @@ public class Match {
 				} else {
 
 					runTaken(secondToBat, currentBatting1, currentBowler, run);
-					DBHelper.getInstance().InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
+					CricketUtilsImpl.getInstance().InsertBallDataSecondInnings(secondToBat, firstToBat, currentBatting1,
 							currentBowler.getName(), totalOver, run + "", matchId);
 				}
 				if (run % 2 == 1 && run != 7) {
@@ -193,7 +193,7 @@ public class Match {
 
 			// next over
 			currentOver++;
-			if (currentOver == OVERS || allout == true)
+			if (currentOver == overs || allout == true)
 				break;
 			System.out.println("\nOver: " + currentOver);
 		}
@@ -204,7 +204,7 @@ public class Match {
 			scoreboard.add(currentBatting2);
 		}
 		secondToBat.setScoreCard(scoreboard);
-		getScore();
+		printScoreBoard();
 		scoreboard = null;
 	}
 
@@ -217,7 +217,8 @@ public class Match {
 			printUtils.printResultHeader(firstToBat, secondToBat);
 			printUtils.printMatchWinner(firstToBat, secondToBat);
 
-			DBHelper.getInstance().finalBallResultQuery(firstToBat, secondToBat, firstToBat.getName(), totalOver, matchId);
+			CricketUtilsImpl.getInstance().finalBallResultQuery(firstToBat, secondToBat, firstToBat.getName(),
+					totalOver, matchId);
 
 			return new CricketResult(firstToBat, secondToBat);
 
@@ -225,7 +226,8 @@ public class Match {
 			printUtils.printResultHeader(firstToBat, secondToBat);
 			printUtils.printMatchWinner(secondToBat, firstToBat);
 
-			DBHelper.getInstance().finalBallResultQuery(firstToBat, secondToBat, secondToBat.getName(), totalOver, matchId);
+			CricketUtilsImpl.getInstance().finalBallResultQuery(firstToBat, secondToBat, secondToBat.getName(),
+					totalOver, matchId);
 
 			return new CricketResult(secondToBat, firstToBat);
 
@@ -233,7 +235,7 @@ public class Match {
 			printUtils.printResultHeader(firstToBat, secondToBat);
 			System.out.println("Its a tie, with both the teams making " + firstToBat.getTotalRuns() + " runs!");
 
-			DBHelper.getInstance().finalBallResultQuery(firstToBat, secondToBat, "Tied", totalOver, matchId);
+			CricketUtilsImpl.getInstance().finalBallResultQuery(firstToBat, secondToBat, "Tied", totalOver, matchId);
 
 			return new CricketResult(firstToBat, secondToBat);
 
@@ -290,7 +292,7 @@ public class Match {
 
 	// prints the current bats-men with their runs, balls, Strike Rate, and team's
 	// score
-	private void getScore() {
+	private void printScoreBoard() {
 
 		printUtils.printScoreBoardHeading();
 
@@ -301,6 +303,20 @@ public class Match {
 		}
 
 		System.out.println("---------------------------------------------------------------\n");
+	}
+
+	public static enum MatchType {
+		T20(20), ODI(50);
+
+		private int overs;
+
+		private MatchType(int overs) {
+			this.overs = overs;
+		}
+
+		public int getValue() {
+			return overs;
+		}
 	}
 
 }

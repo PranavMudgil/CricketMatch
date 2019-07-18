@@ -5,8 +5,11 @@ public class CricketGame {
 		
 		MatchController controller = MatchController.getInstance();
 		
-		// params: match type & number of matches in series
-		controller.initMatch(MatchType.T20,5);
+		/*
+		* @param matchtype 
+		* @param number of matches in series
+		*/
+		controller.initMatch(Match.MatchType.T20,5);
 	}
 
 }

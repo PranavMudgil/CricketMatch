@@ -2,7 +2,7 @@
 import java.util.Map;
 
 public class MatchController {
-	
+
 	private static MatchController controller = new MatchController();
 
 	private Team team1, team2;
@@ -16,21 +16,22 @@ public class MatchController {
 	private Map<String, Integer> idMap;
 
 	private int seriesId;
-	
-	private MatchController() {}
-	
+
+	private MatchController() {
+	}
+
 	public static MatchController getInstance() {
 		return controller;
 	}
 
 	// called from main method
-	public void initMatch(MatchType type, int matches) {
+	public void initMatch(Match.MatchType type, int matches) {
 
 		generateTeams();
 
 		while (matches >= 1) {
 
-			generateMatch(type.getValue());
+			generateMatch(type);
 
 			doToss();
 
@@ -45,28 +46,6 @@ public class MatchController {
 			matches--;
 		}
 		MyConnection.closeConnection();
-	}
-
-	private void generateTeams() {
-
-		team1 = new Team("India", DBHelper.getInstance().getPlayers("India"));
-		team2 = new Team("Pakistan", DBHelper.getInstance().getPlayers("Pakistan"));
-
-		DBHelper.getInstance().InsertTeam(team1, team2);
-
-		idMap = DBHelper.getInstance().FetchTeamId(team1.getName(), team2.getName());
-
-		DBHelper.getInstance().insertSeries(team1.getName(), team2.getName());
-
-		seriesId = DBHelper.getInstance().getSeriesId();
-	}
-
-	private void generateMatch(int overs) {
-
-		DBHelper.getInstance().InsertMatch(idMap.get(team1.getName()), idMap.get(team2.getName()), team1, team2, seriesId);
-
-		matchId = DBHelper.getInstance().GetMatchId();
-		match = new Match(matchId, overs);
 	}
 
 	// this method takes random two element array either 0-0, 0-1, 1-0, 1-1 for toss
@@ -120,16 +99,16 @@ public class MatchController {
 
 		if (winnerTeam.getTotalRuns() == loserTeam.getTotalRuns()) {
 
-			DBHelper.getInstance().InsertMatchTiedResult(winnerTeam, loserTeam, idMap, matchId);
+			CricketUtilsImpl.getInstance().InsertMatchTiedResult(winnerTeam, loserTeam, idMap, matchId);
 
 		} else {
-			DBHelper.getInstance().InsertMatchResult(winnerTeam, loserTeam, idMap, matchId);
+			CricketUtilsImpl.getInstance().InsertMatchResult(winnerTeam, loserTeam, idMap, matchId);
 			winnerTeam.addSeriesScore();
 		}
 
-		DBHelper.getInstance().InsertPlayer(winnerTeam, loserTeam, idMap);
+		CricketUtilsImpl.getInstance().InsertPlayer(winnerTeam, loserTeam, idMap);
 
-		DBHelper.getInstance().updateSeries(team1, team2, seriesId);
+		CricketUtilsImpl.getInstance().updateSeries(team1, team2, seriesId);
 
 		printUtils.printSeriesWinner(team1, team2);
 	}
@@ -138,4 +117,28 @@ public class MatchController {
 		team1.reset();
 		team2.reset();
 	}
+
+	private void generateMatch(Match.MatchType type) {
+
+		CricketUtilsImpl.getInstance().InsertMatch(idMap.get(team1.getName()), idMap.get(team2.getName()), team1, team2,
+				seriesId);
+
+		matchId = CricketUtilsImpl.getInstance().GetMatchId();
+		match = new Match(matchId, type);
+	}
+
+	private void generateTeams() {
+
+		team1 = new Team("India", CricketUtilsImpl.getInstance().getPlayers("India"));
+		team2 = new Team("Pakistan", CricketUtilsImpl.getInstance().getPlayers("Pakistan"));
+
+		CricketUtilsImpl.getInstance().InsertTeam(team1, team2);
+
+		idMap = CricketUtilsImpl.getInstance().FetchTeamId(team1.getName(), team2.getName());
+
+		CricketUtilsImpl.getInstance().insertSeries(team1.getName(), team2.getName());
+
+		seriesId = CricketUtilsImpl.getInstance().getSeriesId();
+	}
+
 }
